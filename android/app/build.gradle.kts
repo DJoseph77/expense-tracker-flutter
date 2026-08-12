@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.expense_tracker_flutter"
+    namespace = "com.youssefathimini.expensetracker"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,8 +20,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.expense_tracker_flutter"
+        applicationId = "com.youssefathimini.expensetracker"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
