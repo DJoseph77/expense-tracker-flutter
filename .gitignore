@@ -12,16 +12,20 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# IntelliJ / VS Code related
 *.iml
 *.ipr
 *.iws
 .idea/
+.vscode/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# Secrets & credentials
+*.env
+*.pem
+*.jks
+*.keystore
+*.mobileprovision
+*.cer
 
 # Flutter/Dart/Pub related
 **/doc/api/
