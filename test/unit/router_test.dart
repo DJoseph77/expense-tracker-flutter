@@ -1,9 +1,22 @@
 import 'package:expense_tracker_flutter/core/router/app_router.dart';
 import 'package:expense_tracker_flutter/features/auth/data/models/user_response.dart';
 import 'package:expense_tracker_flutter/features/auth/presentation/providers/auth_provider.dart';
+import 'package:expense_tracker_flutter/features/statistics/data/models/statistics_response.dart';
+import 'package:expense_tracker_flutter/features/statistics/data/repositories/statistics_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _FakeStatisticsRepository implements StatisticsRepository {
+  @override
+  Future<StatisticsResponse> getSummary() async {
+    return const StatisticsResponse(
+      income: '3500.00',
+      expenses: '1200.50',
+      balance: '2299.50',
+    );
+  }
+}
 
 void main() {
   group('Router Redirect Rules', () {
@@ -15,6 +28,9 @@ void main() {
               (ref) => _FakeAuthNotifier(
                 const AuthState(status: AuthStatus.checkingSession),
               ),
+            ),
+            statisticsRepositoryProvider.overrideWithValue(
+              _FakeStatisticsRepository(),
             ),
           ],
           child: Consumer(
@@ -38,6 +54,9 @@ void main() {
               (ref) => _FakeAuthNotifier(
                 const AuthState(status: AuthStatus.unauthenticated),
               ),
+            ),
+            statisticsRepositoryProvider.overrideWithValue(
+              _FakeStatisticsRepository(),
             ),
           ],
           child: Consumer(
@@ -65,6 +84,9 @@ void main() {
                 const AuthState(status: AuthStatus.authenticated),
               ),
             ),
+            statisticsRepositoryProvider.overrideWithValue(
+              _FakeStatisticsRepository(),
+            ),
           ],
           child: Consumer(
             builder: (context, ref, child) {
@@ -77,7 +99,7 @@ void main() {
 
       await tester.pumpAndSettle();
       expect(find.text('Expense Tracker'), findsOneWidget);
-      expect(find.text('Sign Out'), findsOneWidget);
+      expect(find.text('View Transactions'), findsOneWidget);
     });
   });
 }

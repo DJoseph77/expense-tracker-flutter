@@ -8,6 +8,10 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/categories/presentation/screens/categories_screen.dart';
 import '../../features/dashboard/presentation/screens/home_screen.dart';
+import '../../features/transactions/data/models/transaction.dart';
+import '../../features/transactions/data/models/transaction_type.dart';
+import '../../features/transactions/presentation/screens/add_edit_transaction_screen.dart';
+import '../../features/transactions/presentation/screens/transaction_list_screen.dart';
 
 /// Class to adapt Riverpod StateNotifier to a Listenable for GoRouter
 class RouterNotifier extends ChangeNotifier {
@@ -85,6 +89,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/categories',
         builder: (context, state) => const CategoriesScreen(),
+      ),
+      GoRoute(
+        path: '/transactions',
+        builder: (context, state) => const TransactionListScreen(),
+      ),
+      GoRoute(
+        path: '/transactions/new',
+        builder: (context, state) {
+          final typeParam = state.uri.queryParameters['type'];
+          TransactionType? initialType;
+          if (typeParam != null) {
+            try {
+              initialType = TransactionType.fromJson(typeParam);
+            } catch (_) {}
+          }
+          initialType ??= state.extra as TransactionType?;
+          return AddEditTransactionScreen(initialType: initialType);
+        },
+      ),
+      GoRoute(
+        path: '/transactions/:id/edit',
+        builder: (context, state) {
+          final transaction = state.extra as Transaction?;
+          return AddEditTransactionScreen(initialTransaction: transaction);
+        },
       ),
     ],
   );
