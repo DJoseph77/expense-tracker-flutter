@@ -147,7 +147,22 @@ flutter build ios --release --no-codesign \
 
 ## 📸 Screenshots
 
-*(Screenshots to be attached prior to App Store / Play Store store submission)*
-| Dashboard (Light) | Dashboard (Dark) | Transactions List | Add Transaction |
-| :---: | :---: | :---: | :---: |
-| *[Screenshot Placeholder]* | *[Screenshot Placeholder]* | *[Screenshot Placeholder]* | *[Screenshot Placeholder]* |
+## Screenshots
+
+### Authentication
+
+| Sign In | Registration |
+|---|---|
+| <img src="docs/screenshots/login.png" width="260" alt="Sign-in screen"> | <img src="docs/screenshots/register.png" width="260" alt="Registration screen"> |
+
+### Dashboard
+
+| Light Theme | Dark Theme |
+|---|---|
+| <img src="docs/screenshots/home.png" width="260" alt="Dashboard light theme"> | <img src="docs/screenshots/homeDarkMode.png" width="260" alt="Dashboard dark theme"> |
+
+### Transactions
+
+| Transaction List | Add Transaction |
+|---|---|
+| <img src="docs/screenshots/transactions.png" width="260" alt="Transaction list"> | <img src="docs/screenshots/addTransactions.png" width="260" alt="Add transaction form"> |
