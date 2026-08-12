@@ -2,16 +2,17 @@ import 'package:dio/dio.dart';
 
 import '../storage/secure_storage_service.dart';
 import 'api_endpoints.dart';
+import 'auth_session_event.dart';
 
 class JwtInterceptor extends Interceptor {
   final SecureStorageService _storage;
-  final void Function(String message)? _onUnauthorized;
+  final AuthSessionEventService? _sessionEventService;
 
   JwtInterceptor({
     required SecureStorageService storage,
-    void Function(String message)? onUnauthorized,
+    AuthSessionEventService? sessionEventService,
   }) : _storage = storage,
-       _onUnauthorized = onUnauthorized;
+       _sessionEventService = sessionEventService;
 
   @override
   Future<void> onRequest(
@@ -42,7 +43,9 @@ class JwtInterceptor extends Interceptor {
 
     if (statusCode == 401) {
       await _storage.clearAuthData();
-      _onUnauthorized?.call('Your session expired. Please log in again.');
+      _sessionEventService?.notifyUnauthorized(
+        'Your session expired. Please log in again.',
+      );
     }
 
     return handler.next(err);

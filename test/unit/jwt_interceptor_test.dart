@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:expense_tracker_flutter/core/network/auth_session_event.dart';
 import 'package:expense_tracker_flutter/core/network/jwt_interceptor.dart';
 import 'package:expense_tracker_flutter/core/storage/secure_storage_service.dart';
 import 'package:expense_tracker_flutter/features/auth/data/models/user_response.dart';
@@ -99,15 +100,19 @@ void main() {
     );
 
     test(
-      'HTTP 401 clears stored JWT and calls onUnauthorized callback',
+      'HTTP 401 clears stored JWT and notifies AuthSessionEventService',
       () async {
+        final sessionEventService = AuthSessionEventService();
         bool callbackCalled = false;
+
+        sessionEventService.onUnauthorized.listen((msg) {
+          callbackCalled = true;
+          expect(msg, contains('session expired'));
+        });
+
         final interceptor = JwtInterceptor(
           storage: storage,
-          onUnauthorized: (msg) {
-            callbackCalled = true;
-            expect(msg, contains('session expired'));
-          },
+          sessionEventService: sessionEventService,
         );
 
         final err = DioException(
@@ -122,34 +127,42 @@ void main() {
         await interceptor.onError(err, handler);
 
         expect(storage.token, isNull);
+        await pumpEventQueue();
         expect(callbackCalled, isTrue);
-        expect(handler.error, equals(err));
       },
     );
 
-    test('HTTP 403 preserves stored JWT and does NOT trigger logout', () async {
-      bool callbackCalled = false;
-      final interceptor = JwtInterceptor(
-        storage: storage,
-        onUnauthorized: (msg) {
+    test(
+      'HTTP 403 preserves stored JWT and does NOT trigger session event',
+      () async {
+        final sessionEventService = AuthSessionEventService();
+        bool callbackCalled = false;
+
+        sessionEventService.onUnauthorized.listen((msg) {
           callbackCalled = true;
-        },
-      );
+        });
 
-      final err = DioException(
-        requestOptions: RequestOptions(path: '/api/categories'),
-        response: Response(
+        final interceptor = JwtInterceptor(
+          storage: storage,
+          sessionEventService: sessionEventService,
+        );
+
+        final err = DioException(
           requestOptions: RequestOptions(path: '/api/categories'),
-          statusCode: 403,
-        ),
-      );
+          response: Response(
+            requestOptions: RequestOptions(path: '/api/categories'),
+            statusCode: 403,
+          ),
+        );
 
-      final handler = TestErrorInterceptorHandler();
-      await interceptor.onError(err, handler);
+        final handler = TestErrorInterceptorHandler();
+        await interceptor.onError(err, handler);
 
-      expect(storage.token, 'mock_jwt_token_xyz'); // Token preserved
-      expect(callbackCalled, isFalse);
-      expect(handler.error, equals(err));
-    });
+        expect(storage.token, 'mock_jwt_token_xyz'); // Token preserved
+        await pumpEventQueue();
+        expect(callbackCalled, isFalse);
+        expect(handler.error, equals(err));
+      },
+    );
   });
 }

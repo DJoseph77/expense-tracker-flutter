@@ -12,7 +12,9 @@ void main() {
         ProviderScope(
           overrides: [
             authStateProvider.overrideWith(
-              (ref) => _FakeAuthNotifier(const AuthState(status: AuthStatus.checkingSession)),
+              (ref) => _FakeAuthNotifier(
+                const AuthState(status: AuthStatus.checkingSession),
+              ),
             ),
           ],
           child: Consumer(
@@ -33,7 +35,9 @@ void main() {
         ProviderScope(
           overrides: [
             authStateProvider.overrideWith(
-              (ref) => _FakeAuthNotifier(const AuthState(status: AuthStatus.unauthenticated)),
+              (ref) => _FakeAuthNotifier(
+                const AuthState(status: AuthStatus.unauthenticated),
+              ),
             ),
           ],
           child: Consumer(
@@ -46,7 +50,10 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      expect(find.text('Sign in to manage your income and expenses'), findsOneWidget);
+      expect(
+        find.text('Sign in to manage your income and expenses'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('authenticated /login redirects to /home', (tester) async {
@@ -54,7 +61,9 @@ void main() {
         ProviderScope(
           overrides: [
             authStateProvider.overrideWith(
-              (ref) => _FakeAuthNotifier(const AuthState(status: AuthStatus.authenticated)),
+              (ref) => _FakeAuthNotifier(
+                const AuthState(status: AuthStatus.authenticated),
+              ),
             ),
           ],
           child: Consumer(
@@ -73,7 +82,8 @@ void main() {
   });
 }
 
-class _FakeAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier {
+class _FakeAuthNotifier extends StateNotifier<AuthState>
+    implements AuthNotifier {
   _FakeAuthNotifier(super.state);
 
   @override
@@ -89,5 +99,9 @@ class _FakeAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier
   Future<void> logout() async {}
 
   @override
-  Future<UserResponse?> register(String name, String email, String password) async => null;
+  Future<UserResponse?> register(
+    String name,
+    String email,
+    String password,
+  ) async => null;
 }

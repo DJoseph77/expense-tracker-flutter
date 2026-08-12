@@ -4,28 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/api_config.dart';
 import '../storage/secure_storage_service.dart';
+import 'auth_session_event.dart';
 import 'jwt_interceptor.dart';
-
-/// Callback handle for 401 unauthorized session expiration
-typedef UnauthorizedCallback = void Function(String message);
 
 final dioProvider = Provider<Dio>((ref) {
   final storage = ref.watch(secureStorageProvider);
+  final sessionEventService = ref.watch(authSessionEventServiceProvider);
   return createDioClient(
     storage: storage,
-    onUnauthorized: (message) {
-      ref.read(onUnauthorizedHandlerProvider)?.call(message);
-    },
+    sessionEventService: sessionEventService,
   );
 });
 
-final onUnauthorizedHandlerProvider = StateProvider<UnauthorizedCallback?>(
-  (ref) => null,
-);
-
 Dio createDioClient({
   SecureStorageService? storage,
-  UnauthorizedCallback? onUnauthorized,
+  AuthSessionEventService? sessionEventService,
 }) {
   final dio = Dio(
     BaseOptions(
@@ -42,7 +35,10 @@ Dio createDioClient({
 
   if (storage != null) {
     dio.interceptors.add(
-      JwtInterceptor(storage: storage, onUnauthorized: onUnauthorized),
+      JwtInterceptor(
+        storage: storage,
+        sessionEventService: sessionEventService,
+      ),
     );
   }
 

@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/auth_session_event.dart';
 import '../../data/models/login_request.dart';
 import '../../data/models/register_request.dart';
 import '../../data/models/user_response.dart';
@@ -55,24 +56,35 @@ class AuthState {
 
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
+  final sessionEventService = ref.watch(authSessionEventServiceProvider);
 
-  final notifier = AuthNotifier(repository: repository);
-
-  // Register unauthorized (401) callback handler with Dio
-  ref.read(onUnauthorizedHandlerProvider.notifier).state = (message) {
-    notifier.handleUnauthorized(message);
-  };
-
-  return notifier;
+  return AuthNotifier(
+    repository: repository,
+    sessionEventService: sessionEventService,
+  );
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
+  StreamSubscription<String>? _subscription;
 
-  AuthNotifier({required AuthRepository repository})
-    : _repository = repository,
-      super(const AuthState.initial()) {
+  AuthNotifier({
+    required AuthRepository repository,
+    AuthSessionEventService? sessionEventService,
+  }) : _repository = repository,
+       super(const AuthState.initial()) {
+    if (sessionEventService != null) {
+      _subscription = sessionEventService.onUnauthorized.listen((message) {
+        handleUnauthorized(message);
+      });
+    }
     checkSession();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   /// Checks for stored token and user profile at startup
@@ -184,11 +196,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  /// Handles 401 Unauthorized signal from JWT Interceptor
+  /// Handles 401 Unauthorized signal from AuthSessionEventService
   void handleUnauthorized(String message) {
-    state = AuthState(
-      status: AuthStatus.unauthenticated,
-      errorMessage: message,
-    );
+    if (mounted) {
+      state = AuthState(
+        status: AuthStatus.unauthenticated,
+        errorMessage: message,
+      );
+    }
   }
 }
