@@ -20,6 +20,23 @@ class SecureStorageService {
     await _storage.write(key: _tokenKey, value: token);
   }
 
+  /// Save token and user together. If either write fails, attempts to rollback.
+  Future<void> saveSession(String token, UserResponse user) async {
+    try {
+      await saveToken(token);
+      await saveUser(user);
+    } catch (e) {
+      // attempt rollback
+      try {
+        await deleteToken();
+      } catch (_) {}
+      try {
+        await deleteUser();
+      } catch (_) {}
+      rethrow;
+    }
+  }
+
   Future<String?> readToken() async {
     return await _storage.read(key: _tokenKey);
   }
@@ -56,4 +73,7 @@ class SecureStorageService {
     await deleteToken();
     await deleteUser();
   }
+
+  /// Alias for clearAuthData
+  Future<void> clearSession() async => clearAuthData();
 }

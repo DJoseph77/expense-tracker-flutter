@@ -3,12 +3,30 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/api_config.dart';
+import '../storage/secure_storage_service.dart';
+import 'jwt_interceptor.dart';
+
+/// Callback handle for 401 unauthorized session expiration
+typedef UnauthorizedCallback = void Function(String message);
 
 final dioProvider = Provider<Dio>((ref) {
-  return createDioClient();
+  final storage = ref.watch(secureStorageProvider);
+  return createDioClient(
+    storage: storage,
+    onUnauthorized: (message) {
+      ref.read(onUnauthorizedHandlerProvider)?.call(message);
+    },
+  );
 });
 
-Dio createDioClient() {
+final onUnauthorizedHandlerProvider = StateProvider<UnauthorizedCallback?>(
+  (ref) => null,
+);
+
+Dio createDioClient({
+  SecureStorageService? storage,
+  UnauthorizedCallback? onUnauthorized,
+}) {
   final dio = Dio(
     BaseOptions(
       baseUrl: ApiConfig.baseUrl,
@@ -21,6 +39,12 @@ Dio createDioClient() {
       },
     ),
   );
+
+  if (storage != null) {
+    dio.interceptors.add(
+      JwtInterceptor(storage: storage, onUnauthorized: onUnauthorized),
+    );
+  }
 
   dio.interceptors.add(
     InterceptorsWrapper(
