@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -55,15 +56,33 @@ class HomeScreen extends ConsumerWidget {
                 backgroundColor: Colors.teal.shade50,
               ),
               const SizedBox(height: 32),
+
+              // Categories Action Button
               ElevatedButton.icon(
+                onPressed: () => context.push('/categories'),
+                icon: const Icon(Icons.category_outlined),
+                label: const Text('Categories'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              OutlinedButton.icon(
                 onPressed: () {
                   ref.read(authStateProvider.notifier).logout();
                 },
                 icon: const Icon(Icons.logout),
                 label: const Text('Sign Out'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red[600],
-                  foregroundColor: Colors.white,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red[600],
+                  side: BorderSide(color: Colors.red[300]!),
                 ),
               ),
             ],
